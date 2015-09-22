@@ -1,10 +1,24 @@
-BLLIP Reranking Parser
+Charniak Parser Emscripten Port
 ----------------------
-.. image:: https://travis-ci.org/BLLIP/bllip-parser.png?branch=master
-   :target: https://travis-ci.org/BLLIP/bllip-parser
 
-.. image:: https://badge.fury.io/py/bllipparser.png
-   :target: https://badge.fury.io/py/bllipparser
+![Constituent Parse Tree](https://upload.wikimedia.org/wikipedia/commons/5/54/Parse_tree_1.jpg)
+
+This is a parser which is capable of transforming a sentence into a [Constituency-based parse tree](https://en.wikipedia.org/wiki/Parse_tree), like the one which is depicted above. 
+
+This port runs in Javascript, thanks to Emscripten, so it can run in the browser. That may not be a good idea, because this is ridiculously memory-intensive. If you want to do anything serious, you should probably use the bindings for [Python](http://pypi.python.org/pypi/bllipparser/) or Java.
+
+The BLLIP Parser (also known as Charniak-Johnson Parser, CJ Parser, or Brown Reranking Parser) achieves [state of the art](http://nlp.stanford.edu/pubs/lrecstanforddeps_final_final.pdf) performance compared to Stanford CoreNLP and the Berkeley Parser. 
+
+I didn't actually bother porting the reranking second-stage bit of the parser, so it won't perform as well as typical BLLIP, which is all the more reason to ignore this project and use the real one. 
+
+
+Authors
+~~~~~~~~~
+
+This Emscripten port is antimatter15's fault, the actual parser
+is made by the Brown Laboratory for Linguistic Information Processing. 
+If you didn't have a good experience using this library, don't attribute
+any of that to the parser upon which this was based. 
 
 Copyright Mark Johnson, Eugene Charniak, 24th November 2005 --- August 2006
 
@@ -13,156 +27,26 @@ software and any code derived from this software. Please report the
 release date of the software that you are using, as this will enable
 others to compare their results to yours.
 
-Overview
-~~~~~~~~
-BLLIP Parser is a statistical natural language parser including a
-generative constituent parser (``first-stage``) and discriminative
-maximum entropy reranker (``second-stage``). The latest version can
-be found on `GitHub <https://github.com/BLLIP/bllip-parser>`_. This
-document describes basic usage of the command line interface and
-describes how to build and run the reranking parser. There are now
-`Python <http://pypi.python.org/pypi/bllipparser/>`_ and Java interfaces
-as well. The Python interface is described in `README-python.rst
-<https://github.com/BLLIP/bllip-parser/blob/master/README-python.rst>`_.
 
-Compiling the parser
-~~~~~~~~~~~~~~~~~~~~
-1. *(optional)* For optimal speed, you may want to define ``$GCCFLAGS``
-   specifically for your machine. However, this step can be safely
-   skipped as the defaults are usually fine. With ``csh`` or ``tcsh``,
-   try something like::
+Copyright 2005 Brown University, Providence, RI.
 
-     shell> setenv GCCFLAGS "-march=pentium4 -mfpmath=sse -msse2 -mmmx"
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License.  You may obtain
+a copy of the License at
 
-   or::
+    http://www.apache.org/licenses/LICENSE-2.0
 
-     shell> setenv GCCFLAGS "-march=opteron -m64"
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+License for the specific language governing permissions and limitations
+under the License.
 
-2. Build the parser with::
 
-    shell> make
-
-   -  Sidenote on compiling on OS X
-
-      OS X uses the ``clang`` compiler by default which cannot currently
-      compile the parser. Try setting this environment variable before
-      building to change the default C++ compiler::
-
-         shell> setenv CXX g++
-
-      Recent versions of OS X may have additional issues. See issues
-      `19 <http://github.com/BLLIP/bllip-parser/issues/19>`_ and `13
-      <https://github.com/BLLIP/bllip-parser/issues/13>`_ for more
-      information.
-
-Obtaining parser models
-~~~~~~~~~~~~~~~~~~~~~~~
-The GitHub repository includes parsing and reranker models, though
-these are mostly around for historical purposes.  See `BLLIP Parser
-models <https://github.com/BLLIP/bllip-parser/blob/master/MODELS.rst>`_
-for information about obtaining newer and more accurate parsing models.
-
-Running the parser
-~~~~~~~~~~~~~~~~~~
-After it has been built, the parser can be run with::
-
-    shell> parse.sh <sourcefile.txt>
-
-For example::
-
-    shell> parse.sh sample-text/sample-data.txt
-
-The input text must be pre-sentence segmented with each sentence in an
-``<s>`` tag::
-
-    <s> Sentence 1 </s>
-    <s> Sentence 2 </s>
-    ...
-
-Note that there needs to be a space before and after the sentence.
-
-The parser distribution currently includes a basic Penn Treebank Wall
-Street Journal parsing models which ``parse.sh`` will use by default. 
-The Python interface to the parser includes a mechanism for listing and
-downloading additional parsing models (some of which are more accurate,
-depending on what you're parsing).
-
-The script ``parse-and-fuse.sh`` demonstrates how to run syntactic
-parse fusion. Fusion can also be run via the Python bindings.
-
-The script ``parse-eval.sh`` takes a list of treebank files as arguments
-and extracts the terminal strings from them, runs the two-stage parser
-on those terminal strings and then evaluates the parsing accuracy with
-Sparseval. For example, if the Penn Treebank 3 is installed at
-``/usr/local/data/Penn3/``, the following code evaluates the two-stage
-parser on section 24::
-
-   shell> parse-eval.sh /usr/local/data/Penn3/parsed/mrg/wsj/24/wsj*.mrg
-
-The ``Makefile`` will attempt to automatically download and build
-Sparseval for you if you run ``make sparseval``.
-
-For more information on `Sparseval
-<http://www.clsp.jhu.edu/vfsrv/ws2005/groups/eventdetect/files/SParseval.tgz>`_
-see this `paper
-<http://www.lrec-conf.org/proceedings/lrec2006/pdf/116_pdf.pdf>`_::
-
-    @inproceedings{roark2006sparseval,
-        title={SParseval: Evaluation metrics for parsing speech},
-        author={Roark, Brian and Harper, Mary and Charniak, Eugene and 
-                Dorr, Bonnie and Johnson, Mark and Kahn, Jeremy G and 
-                Liu, Yang and Ostendorf, Mari and Hale, John and
-                Krasnyanskaya, Anna and others},
-        booktitle={Proceedings of LREC},
-        year={2006}
-    }
-
-We no longer distribute `evalb <http://nlp.cs.nyu.edu/evalb/>`_ with the
-parser since it sometimes skips sentences unnecessarily. Sparseval does
-not have these issues.
-
-More questions?
-~~~~~~~~~~~~~~~
-There is more information about different components of the
-parser spread across ``README`` files in this distribution (see
-below). BLLIP Parser is
-maintained by `David McClosky <http://nlp.stanford.edu/~mcclosky>`_.
-
-- Usage help: `StackOverflow <http://stackoverflow.com/tags/charniak-parser/info>`_ (use ``charniak-parser`` tag)
-- Bug reports and feature requests: `GitHub issue tracker <http://github.com/BLLIP/bllip-parser/issues>`_
-- Twitter: `@bllipparser <https://twitter.com/bllipparser>`_
-
-Parser details
-^^^^^^^^^^^^^^
-For details on the running the parser, see `first-stage/README.rst
-<https://github.com/BLLIP/bllip-parser/blob/master/first-stage/README.rst>`_.
-For help retraining the parser, see `first-stage/TRAIN/README.rst
-<https://github.com/BLLIP/bllip-parser/blob/master/first-stage/TRAIN/README.rst>`_ (also includes some information about the parser model file formats).
-
-Reranker details
-^^^^^^^^^^^^^^^^
-See `second-stage/README
-<https://github.com/BLLIP/bllip-parser/blob/master/second-stage/README>`_
-for an overview.  `second-stage/README-retrain.rst
-<https://github.com/BLLIP/bllip-parser/blob/master/second-stage/README-retrain.rst>`_ details how to retrain the reranker.  The
-``second-stage/programs/*/README`` files include additional notes about
-different reranker components.
-
-Other versions of the parser
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We haven't tested these and can't support them, but they may be useful
-if you're working on other platforms or languages.
-
-- `Native Charniak parser for Windows
-  <https://github.com/dorony/CharniakParserWindows>`_ (doesn't need cygwin,
-  no reranker)
-- `Rutu Mulkar-Mehta's Windows version
-  <http://www.rutumulkar.com/software.html>`_
-- `Djame's French branch <https://bitbucket.org/djame/bllip-parser-fr>`_
-- `Liang Huang's Forest Reranker <http://acl.cs.qc.edu/~lhuang/>`_  (includes forest-dumping extensions)
 
 References
 ^^^^^^^^^^
+
 
 * Eugene Charniak and Mark Johnson. "`Coarse-to-fine n-best parsing and
   MaxEnt discriminative reranking

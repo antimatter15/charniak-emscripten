@@ -1,0 +1,29 @@
+<script>
+	
+	var worker = new Worker('worker.js')
+	worker.onmessage = function(e){
+		if(e.data.type == 'progress'){
+			document.getElementById('progress').value = e.data.value / 100;
+		}else if(e.data.type == 'loaded'){
+			document.getElementById('textarea').disabled = false
+			process_text()
+		}else{
+			console.log(e.data)
+		}
+	}
+	worker.postMessage({
+		type: 'load'
+	})
+
+	function process_text(){
+		var text = document.getElementById('textarea').value.trim()
+		worker.postMessage({
+			type: 'parse',
+			text: text
+		})
+	}
+</script>
+
+<progress  style="width: 300px" id="progress" value=0></progress>
+<br>
+<input style="width: 300px" disabled id="textarea" value="hello darkness my old friend" oninput="process_text()" />

@@ -18,6 +18,10 @@
 #include "ECString.h"
 #include <set>
 
+extern "C" {
+  extern void progress_indicator(int i, int part);
+}
+
 FeatureTree* FeatureTree::roots_[20];
 
 extern int MinCount;
@@ -43,17 +47,17 @@ follow(int val, int auxCnt)
    assumedNum //e.g., 55 (np)
         rule# count
         ...
-	--
-	48 //this would be np under adjp
+  --
+  48 //this would be np under adjp
              rule# count
-	     ...
+       ...
         --  //end  of rules
         -- //end of 48
-	49
-	...
-	--  //end of 49
-	...
-	--  // end of g(rtl)s
+  49
+  ...
+  --  //end of 49
+  ...
+  --  // end of g(rtl)s
    Pringint is brown into 2 procedures.  The first takes a position
    in the tree and determines if the data there supports it (i.e.,
    there is enough for any one conditioned value).  if so, it
@@ -73,6 +77,7 @@ FeatureTree(istream& is)
       int val = readOneLevel0(is,c);
       if(val == -1) done = 1;
       c++;
+      progress_indicator(c, Feature::whichInt);
     }
   roots_[Feature::whichInt] = this;
 }
@@ -147,13 +152,13 @@ othReadFeatureTree(istream& is, FTypeTree* ftt, int ctrees)
   if(indStr != "A")
     {
       cerr << "fi = " << ftt->n << " " << ctrees << " " << indStr
-	   << " " << ind() << " " << count << endl;
+     << " " << ind() << " " << count << endl;
       for(int i = 0 ; i < 5 ; i++)
-	{
-	  ECString tmp;
-	  is >> tmp;
-	  cerr << tmp << " ";
-	}
+  {
+    ECString tmp;
+    is >> tmp;
+    cerr << tmp << " ";
+  }
       cerr << endl;
       cerr << ftt->right->n << endl;
       assert(indStr == "A");
@@ -171,18 +176,18 @@ othReadFeatureTree(istream& is, FTypeTree* ftt, int ctrees)
    assumedNum //e.g., 55 (np)
         rule# count
         ...
-	--
-	48 //this would be np under adjp
+  --
+  48 //this would be np under adjp
              rule# count
-	     ...
-	     --
-	49
-	...
-	--  //end of 49
-	...
-	--  // end of g(rtl)s
-	A  //indicates that there is another group of features here.
-	2  //np's with head's pos->toInt() == 2;
+       ...
+       --
+  49
+  ...
+  --  //end of 49
+  ...
+  --  // end of g(rtl)s
+  A  //indicates that there is another group of features here.
+  2  //np's with head's pos->toInt() == 2;
    Pringint is brown into 2 procedures.  The first takes a position
    in the tree and determines if the data there supports it (i.e.,
    there is enough for any one conditioned value).  if so, it
