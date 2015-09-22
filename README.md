@@ -13,7 +13,7 @@ I didn't actually bother porting the reranking second-stage bit of the parser, s
 
 
 Authors
-~~~~~~~~~
+=======
 
 This Emscripten port is antimatter15's fault, the actual parser
 is made by the Brown Laboratory for Linguistic Information Processing. 
@@ -45,7 +45,7 @@ under the License.
 
 
 References
-^^^^^^^^^^
+==============
 
 
 * Eugene Charniak and Mark Johnson. "`Coarse-to-fine n-best parsing and
