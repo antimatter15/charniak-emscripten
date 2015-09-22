@@ -92,11 +92,15 @@ parseIt: $(PARSE_OBJS)
 oparseIt: $(OPARSE_OBJS)
 	$(CXX) $(CFLAGS) $(OPARSE_OBJS) -o oparseIt 
 
-emscripten: $(COMMON_OBJS)
+charniak.js: $(COMMON_OBJS) beep-boop.cpp
 	emcc -O2 -s EXPORTED_FUNCTIONS="['_set_nth', '_set_case', '_set_pretty', '_parse_sentence', '_load_model']" \
 	-o charniak.js beep-boop.cpp $(COMMON_OBJS) \
 	--preload-file ../DATA/EN@/EN-DATA -s TOTAL_MEMORY=120000000 \
 	--memory-init-file 0 --js-library merp-derp.js
+
+emscripten: charniak.js
+	cp charniak.js ../../build
+	cp charniak.data ../../build
 
 evalTree: $(EVALTREE_OBJS)
 	$(CXX) $(CFLAGS) ${EVALTREE_OBJS} -o evalTree -D_REENTRANT -D_XOPEN_SOURCE=600 -lpthread
