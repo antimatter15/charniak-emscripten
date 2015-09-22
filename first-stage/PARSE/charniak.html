@@ -1,5 +1,8 @@
 <script>
 	
+	var message_counter = 0,
+		callbacks = {};
+
 	var worker = new Worker('worker.js')
 	worker.onmessage = function(e){
 		if(e.data.type == 'progress'){
@@ -7,23 +10,60 @@
 		}else if(e.data.type == 'loaded'){
 			document.getElementById('textarea').disabled = false
 			process_text()
-		}else{
-			console.log(e.data)
+		}
+		if('parent' in e.data && e.data.parent in callbacks){
+			callbacks[e.data.parent](e.data);
 		}
 	}
-	worker.postMessage({
-		type: 'load'
-	})
+	// worker.postMessage({type: 'load'})
+
+	function send(type, obj, callback){
+		if(!obj) obj = {}
+		obj.type = type;
+
+		if(callback){
+			obj.id = message_counter++;
+			callbacks[obj.id] = function(data){
+				if(callback(data) === false){
+					delete callbacks[obj.id]
+				}
+			}	
+		}
+		worker.postMessage(obj)
+	}
+
+	send('pretty', {value: true})
+	send('load')
+
+	var parse_queue = [], queue_running = false;
 
 	function process_text(){
 		var text = document.getElementById('textarea').value.trim()
-		worker.postMessage({
-			type: 'parse',
-			text: text
-		})
+		// parse_queue.push(text)
+		parse_queue = [text]
+		if(!queue_running) process_queue();
+	}
+
+	function process_queue(){
+		if(parse_queue.length){
+			queue_running = true;
+			send('parse', {text: parse_queue.shift()}, function(e){
+				document.getElementById('output').innerText = e.text.join('\n')
+				queue_running = false;
+				process_queue();
+				return false
+			})	
+		}else{
+			queue_running = false;
+		}
 	}
 </script>
 
 <progress  style="width: 300px" id="progress" value=0></progress>
+
 <br>
 <input style="width: 300px" disabled id="textarea" value="hello darkness my old friend" oninput="process_text()" />
+
+<br>
+
+<pre id="output"></pre>

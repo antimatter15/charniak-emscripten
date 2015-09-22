@@ -13,6 +13,10 @@ Module.reportProgress = function(pct){
 	})
 }
 
+var ouput_buffer = []
+Module.print = function(text){
+	output_buffer.push(text)
+}
 var is_ready = false, ready_queue = [];
 Module.onRuntimeInitialized = function(){
 	is_ready = true;
@@ -24,18 +28,29 @@ Module.onRuntimeInitialized = function(){
 
 function handle_packet(e){
 	var data = e.data;
+	function respond(type, obj){
+		if(!obj) obj = {};
+		obj.type = type;
+		if('id' in data) obj.parent = data.id;
+		postMessage(obj)
+	}
 
 	if(data.type == 'load'){
 		load_model("EN-DATA/")	
-		postMessage({ type: 'loaded' })
+		respond('loaded')
 	}else if(data.type == 'pretty'){
 		set_pretty(data.value)	
+		respond('ack')
 	}else if(data.type == 'case'){
 		set_case(data.value)	
+		respond('ack')
 	}else if(data.type == 'nth'){
-		set_nth(data.value)	
+		set_nth(data.value)
+		respond('ack')
 	}else if(data.type == 'parse'){
+		output_buffer = []
 		parse_sentence("<s> " + data.text + " </s>")
+		respond('stdout', {text: output_buffer})
 	}
 }
 
