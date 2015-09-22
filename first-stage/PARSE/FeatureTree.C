@@ -17,7 +17,8 @@
 #include "FeatureTree.h"
 #include "ECString.h"
 #include <set>
-
+#include <emscripten.h>
+ 
 extern "C" {
   extern void progress_indicator(int i, int part);
 }
@@ -109,7 +110,7 @@ read(istream& is, FTypeTree* ftt)
   int cfeats, ctrees;
   is >> cfeats;
   is >> ctrees;
-  //cerr << "R " << ftt->n << " " << ind() << " " << count << endl;
+  // cerr << "R " << ftt->n << " " << ind() << " " << count << endl;
   int cf;
   if(cfeats > 0) feats.set(cfeats);
   for(cf = 0 ; cf < cfeats ; cf++)
@@ -117,9 +118,15 @@ read(istream& is, FTypeTree* ftt)
       is >> indI;
       Feat& nf = feats.array_[cf];
       nf.ind_ = indI;
-      float v;
-      is >> v;
-      nf.g() = v;
+      // float v;
+      // is >> v;
+      // std::string fName;
+      char tab2[16];
+      is >> tab2;
+      nf.g() = (float) EM_ASM_DOUBLE({
+        return parseFloat(Pointer_stringify($0));
+      }, tab2);
+      // nf.g() = v;
       //cerr << indI << "\t" << v << endl;
     }
   if(ctrees > 0) subtree.set(ctrees);

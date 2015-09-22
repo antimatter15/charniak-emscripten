@@ -1,3 +1,4 @@
+<script src="treebank_tags.js"></script>
 <script>
 	var message_counter = 0,
 		callbacks = {};
@@ -47,7 +48,18 @@
 		if(parse_queue.length){
 			queue_running = true;
 			send('parse', {text: parse_queue.shift()}, function(e){
-				document.getElementById('output').innerText = e.text.join('\n')
+				document.getElementById('output').innerHTML = e.text.join('\n').replace(
+					new RegExp('\\((' + treebank_tags
+						.map(function(k){return RegExp.escape(k.tag)})
+						.sort(function(b,a){return a.length - b.length})
+						.join('|') + ') ', 'g'),
+					function(all, thing){
+						var tag = treebank_tags.filter(function(e){
+							return e.tag == thing
+						})[0];
+						return "(<a href='#' title='" + tag.explanation + "'>" + thing + '</a> '
+					}
+				)
 				queue_running = false;
 				process_queue();
 				return false
@@ -56,6 +68,10 @@
 			queue_running = false;
 		}
 	}
+
+	RegExp.escape= function(s) {
+	    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+	};
 </script>
 
 <progress  style="width: 300px" id="progress" value=0></progress>
@@ -65,4 +81,4 @@
 
 <br>
 
-<pre id="output"></pre>
+<div style="white-space: pre; font-family: monospace" id="output"></div>

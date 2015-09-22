@@ -36,7 +36,9 @@ function handle_packet(e){
 	}
 
 	if(data.type == 'load'){
+		console.time('load model')
 		load_model("EN-DATA/")	
+		console.timeEnd('load model')
 		respond('loaded')
 	}else if(data.type == 'pretty'){
 		set_pretty(data.value)	
